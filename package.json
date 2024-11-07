@@ -1,0 +1,15 @@
+{
+  "name": "iot-protocols-1",
+  "version": "1.0.0",
+  "description": "Esempi ed esercizi per il modulo \"Adv networking: comunicazione tra oggetti e standard di interoperabilità\" - corso IoT 2025.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "restify": "^11.1.0"
+  }
+}
