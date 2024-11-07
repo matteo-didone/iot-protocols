@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "mongodb": "^6.10.0",
     "restify": "^11.1.0"
   }
 }

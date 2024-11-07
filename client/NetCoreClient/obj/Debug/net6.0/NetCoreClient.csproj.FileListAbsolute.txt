@@ -1,50 +1,75 @@
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\NetCoreClient.exe
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\NetCoreClient.deps.json
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\NetCoreClient.runtimeconfig.json
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\NetCoreClient.dll
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\NetCoreClient.pdb
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.csproj.AssemblyReference.cache
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.GeneratedMSBuildEditorConfig.editorconfig
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.AssemblyInfoInputs.cache
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.AssemblyInfo.cs
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.csproj.CoreCompileInputs.cache
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.dll
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\refint\NetCoreClient.dll
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.pdb
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.genruntimeconfig.cache
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\ref\NetCoreClient.dll
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.Configuration.dll
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.Configuration.Abstractions.dll
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.Configuration.FileExtensions.dll
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.Configuration.Json.dll
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.FileProviders.Abstractions.dll
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.FileProviders.Physical.dll
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.FileSystemGlobbing.dll
-D:\git\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.Primitives.dll
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.sourcelink.json
-D:\git\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreC.3FF35A2D.Up2Date
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\NetCoreClient.exe
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\NetCoreClient.deps.json
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\NetCoreClient.runtimeconfig.json
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\NetCoreClient.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\NetCoreClient.pdb
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.Configuration.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.Configuration.Abstractions.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.Configuration.FileExtensions.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.Configuration.Json.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.FileProviders.Abstractions.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.FileProviders.Physical.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.FileSystemGlobbing.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\bin\Debug\net6.0\Microsoft.Extensions.Primitives.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.csproj.AssemblyReference.cache
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.GeneratedMSBuildEditorConfig.editorconfig
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.AssemblyInfoInputs.cache
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.AssemblyInfo.cs
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.csproj.CoreCompileInputs.cache
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.sourcelink.json
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreC.3FF35A2D.Up2Date
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\refint\NetCoreClient.dll
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.pdb
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\NetCoreClient.genruntimeconfig.cache
-D:\git\ITS\iot-protocols\client\NetCoreClient\obj\Debug\net6.0\ref\NetCoreClient.dll
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.exe
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.deps.json
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.runtimeconfig.json
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.dll
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.pdb
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.csproj.AssemblyReference.cache
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.GeneratedMSBuildEditorConfig.editorconfig
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.AssemblyInfoInputs.cache
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.AssemblyInfo.cs
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.csproj.CoreCompileInputs.cache
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.dll
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/refint/NetCoreClient.dll
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.pdb
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.genruntimeconfig.cache
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/ref/NetCoreClient.dll
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.dll
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.Abstractions.dll
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.FileExtensions.dll
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.Json.dll
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.FileProviders.Physical.dll
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.FileSystemGlobbing.dll
+D:/git/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Primitives.dll
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.sourcelink.json
+D:/git/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreC.3FF35A2D.Up2Date
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.exe
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.deps.json
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.runtimeconfig.json
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.pdb
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.Abstractions.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.FileExtensions.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.Json.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.FileProviders.Physical.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.FileSystemGlobbing.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Primitives.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.csproj.AssemblyReference.cache
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.GeneratedMSBuildEditorConfig.editorconfig
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.AssemblyInfoInputs.cache
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.AssemblyInfo.cs
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.csproj.CoreCompileInputs.cache
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.sourcelink.json
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreC.3FF35A2D.Up2Date
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/refint/NetCoreClient.dll
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.pdb
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.genruntimeconfig.cache
+D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/ref/NetCoreClient.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.deps.json
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.runtimeconfig.json
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/NetCoreClient.pdb
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.Abstractions.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.FileExtensions.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Configuration.Json.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.FileProviders.Physical.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.FileSystemGlobbing.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/Microsoft.Extensions.Primitives.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.csproj.AssemblyReference.cache
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.GeneratedMSBuildEditorConfig.editorconfig
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.AssemblyInfoInputs.cache
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.AssemblyInfo.cs
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.csproj.CoreCompileInputs.cache
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.sourcelink.json
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.csproj.CopyComplete
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/refint/NetCoreClient.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.pdb
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.genruntimeconfig.cache
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/ref/NetCoreClient.dll

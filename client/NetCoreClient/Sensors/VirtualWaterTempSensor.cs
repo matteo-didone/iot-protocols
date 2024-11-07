@@ -19,7 +19,14 @@ namespace NetCoreClient.Sensors
 
         public string ToJson()
         {
-            return JsonSerializer.Serialize(WaterTemperature());
+            var measurement = new
+            {
+                measurement = "water_temperature",
+                value = WaterTemperature(),
+                timestamp = DateTime.UtcNow.ToString("o")  // ISO 8601 format
+            };
+
+            return JsonSerializer.Serialize(measurement);
         }
     }
 }
