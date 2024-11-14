@@ -1,13 +1,14 @@
-const restify = require('restify');
+const mqtt = require('mqtt');
 const { MongoClient } = require('mongodb');
-
-const server = restify.createServer();
-server.use(restify.plugins.bodyParser());
 
 // MongoDB connection URL
 const mongoUrl = 'mongodb://localhost:27017';
 const dbName = 'water_coolers_db';
 let db;
+
+// MQTT broker URL
+const brokerUrl = 'mqtt://localhost:1883';
+const client = mqtt.connect(brokerUrl);
 
 // Connect to MongoDB
 MongoClient.connect(mongoUrl)
@@ -19,32 +20,55 @@ MongoClient.connect(mongoUrl)
         console.error('Failed to connect to MongoDB:', err);
     });
 
-// GET all coolers
-server.get('/water_coolers', function(req, res, next) {
-    db.collection('readings')
-        .distinct('coolerId')
-        .then(coolers => {
-            res.send({
+// MQTT connection handler
+client.on('connect', () => {
+    console.log('Connected to MQTT broker');
+
+    // Subscribe to topics
+    client.subscribe('water_coolers/+/readings', (err) => {
+        if (err) console.error('Subscription error:', err);
+    });
+
+    client.subscribe('water_coolers/list', (err) => {
+        if (err) console.error('Subscription error:', err);
+    });
+
+    client.subscribe('water_coolers/+/data', (err) => {
+        if (err) console.error('Subscription error:', err);
+    });
+});
+
+// Handle incoming messages
+client.on('message', async (topic, message) => {
+    console.log(`Received message on ${topic}`);
+
+    // Handle different topics
+    if (topic === 'water_coolers/list') {
+        // GET all coolers
+        try {
+            const coolers = await db.collection('readings').distinct('coolerId');
+            client.publish('water_coolers/list/response', JSON.stringify({
                 status: 'success',
                 total: coolers.length,
                 coolers: coolers.filter(id => id !== "")
-            });
-            return next();
-        })
-        .catch(err => {
-            res.send(500, { error: err.message });
-            return next();
-        });
-});
+            }));
+        } catch (err) {
+            client.publish('water_coolers/list/response', JSON.stringify({
+                status: 'error',
+                error: err.message
+            }));
+        }
+    }
+    else if (topic.match(/water_coolers\/(.+)\/data/)) {
+        // GET specific cooler data
+        const coolerId = topic.split('/')[1];
+        try {
+            const readings = await db.collection('readings')
+                .find({ coolerId: coolerId })
+                .sort({ timestamp: -1 })
+                .limit(10)
+                .toArray();
 
-// GET specific cooler data
-server.get('/water_coolers/:id', function(req, res, next) {
-    db.collection('readings')
-        .find({ coolerId: req.params['id'] })
-        .sort({ timestamp: -1 })
-        .limit(10)
-        .toArray()
-        .then(readings => {
             // Raggruppa le letture per tipo di misurazione
             const measurementGroups = {};
             readings.forEach(reading => {
@@ -67,58 +91,55 @@ server.get('/water_coolers/:id', function(req, res, next) {
                 };
             });
 
-            res.send({
+            client.publish(`water_coolers/${coolerId}/data/response`, JSON.stringify({
                 status: 'success',
-                coolerId: req.params['id'],
+                coolerId: coolerId,
                 lastUpdate: readings[0]?.timestamp,
                 stats: stats,
                 readings: readings
-            });
-            return next();
-        })
-        .catch(err => {
-            res.send(500, { error: err.message });
-            return next();
-        });
-});
+            }));
+        } catch (err) {
+            client.publish(`water_coolers/${coolerId}/data/response`, JSON.stringify({
+                status: 'error',
+                error: err.message
+            }));
+        }
+    }
+    else if (topic.match(/water_coolers\/(.+)\/readings/)) {
+        // POST new reading
+        try {
+            const coolerId = topic.split('/')[1];
+            const data = JSON.parse(message.toString());
 
-// POST new reading
-server.post('/water_coolers/:id', function(req, res, next) {
-    try {
-        // Parse e valida i dati in arrivo
-        let data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-        
-        const reading = {
-            coolerId: req.params['id'],
-            measurement: data.measurement,
-            value: data.value,
-            timestamp: new Date(data.timestamp)
-        };
+            const reading = {
+                coolerId: coolerId,
+                measurement: data.measurement,
+                value: data.value,
+                timestamp: new Date(data.timestamp)
+            };
 
-        console.log('Received reading:', reading);  // Debug log
+            console.log('Received reading:', reading);
 
-        db.collection('readings')
-            .insertOne(reading)
-            .then(() => {
-                res.send({
-                    status: 'success',
-                    message: 'Data saved successfully',
-                    reading: reading
-                });
-                return next();
-            })
-            .catch(err => {
-                console.error('Error saving to DB:', err);  // Debug log
-                res.send(500, { error: err.message });
-                return next();
-            });
-    } catch (err) {
-        console.error('Error processing request:', err);  // Debug log
-        res.send(400, { error: 'Invalid data format' });
-        return next();
+            await db.collection('readings').insertOne(reading);
+
+            client.publish(`water_coolers/${coolerId}/readings/response`, JSON.stringify({
+                status: 'success',
+                message: 'Data saved successfully',
+                reading: reading
+            }));
+        } catch (err) {
+            console.error('Error processing message:', err);
+            client.publish(`water_coolers/${coolerId}/readings/response`, JSON.stringify({
+                status: 'error',
+                error: err.message
+            }));
+        }
     }
 });
 
-server.listen(8011, function() {
-    console.log('%s listening at %s', server.name, server.url);
+// Error handling
+client.on('error', (err) => {
+    console.error('MQTT error:', err);
 });
+
+console.log('MQTT server is running...');

@@ -73,3 +73,4 @@ D:/git/ITS/iot-protocols/client/NetCoreClient/obj/Debug/net6.0/ref/NetCoreClient
 /Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.pdb
 /Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/NetCoreClient.genruntimeconfig.cache
 /Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/obj/Debug/net6.0/ref/NetCoreClient.dll
+/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/bin/Debug/net6.0/MQTTnet.dll

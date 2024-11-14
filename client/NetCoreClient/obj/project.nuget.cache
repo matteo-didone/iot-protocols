@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "C/KMjEyLa2IRbDS7OdFCfrVTmZes035U+tSuppeB7HyVQGVuFMYdisjkom5tBPndd245octpaC1XqCk5P9mUDA==",
+  "dgSpecHash": "gL0OuHupfGR5C290rxSYrMkuRIOSypm+qKufKbbhqJMsH4j5EsbgXLWidvU6VBckKnnU27Rg57aHoVQsZ0uJmw==",
   "success": true,
   "projectFilePath": "/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/NetCoreClient.csproj",
   "expectedPackageFiles": [
@@ -12,6 +12,7 @@
     "/Users/matteodidone/.nuget/packages/microsoft.extensions.fileproviders.physical/6.0.0/microsoft.extensions.fileproviders.physical.6.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/microsoft.extensions.filesystemglobbing/6.0.0/microsoft.extensions.filesystemglobbing.6.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/microsoft.extensions.primitives/6.0.0/microsoft.extensions.primitives.6.0.0.nupkg.sha512",
+    "/Users/matteodidone/.nuget/packages/mqttnet/4.3.7.1207/mqttnet.4.3.7.1207.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/system.text.encodings.web/6.0.0/system.text.encodings.web.6.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/system.text.json/6.0.0/system.text.json.6.0.0.nupkg.sha512"

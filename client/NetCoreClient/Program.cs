@@ -1,22 +1,56 @@
-﻿using NetCoreClient.Sensors;
-using NetCoreClient.Protocols;
+﻿using NetCoreClient.Protocols;
+using NetCoreClient.Sensors;
+using System.Text.Json;
 
-// define sensors
-List<ISensorInterface> sensors = new();
-sensors.Add(new VirtualWaterTempSensor());
-sensors.Add(new VirtualWaterFlowSensor());  // Aggiunto il nuovo sensore
-
-// define protocol
-ProtocolInterface protocol = new Http("http://localhost:8011/water_coolers/123");
-
-// send data to server
-while (true)
+class Program
 {
-    foreach (ISensorInterface sensor in sensors)
+    static void Main(string[] args)
     {
-        var sensorValue = sensor.ToJson();
-        protocol.Send(sensorValue);
-        Console.WriteLine("Data sent: " + sensorValue);
-        Thread.Sleep(1000);
+        // Inizializza i sensori
+        var waterFlowSensor = new VirtualWaterFlowSensor();
+        var waterTempSensor = new VirtualWaterTempSensor();
+
+        // Inizializza il protocollo MQTT
+        var protocol = new Mqtt("localhost:1883");
+
+        try
+        {
+            while (true)
+            {
+                // Lettura e invio dati sensore flusso
+                var waterFlowData = new
+                {
+                    coolerId = "cooler_001",
+                    measurement = "water_flow",
+                    value = waterFlowSensor.WaterFlow(),
+                    timestamp = DateTime.UtcNow
+                };
+                protocol.Send(JsonSerializer.Serialize(waterFlowData));
+
+                // Lettura e invio dati sensore temperatura
+                var tempData = new
+                {
+                    coolerId = "cooler_001",
+                    measurement = "water_temperature",
+                    value = waterTempSensor.WaterTemperature(),
+                    timestamp = DateTime.UtcNow
+                };
+                protocol.Send(JsonSerializer.Serialize(tempData));
+
+                Console.WriteLine("Readings sent");
+                Thread.Sleep(5000);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        finally
+        {
+            if (protocol is IDisposable disposableProtocol)
+            {
+                disposableProtocol.Dispose();
+            }
+        }
     }
 }
