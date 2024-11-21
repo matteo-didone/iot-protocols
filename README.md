@@ -1,7 +1,7 @@
 
 # IoT Protocols: Esempi di Comunicazione MQTT
 
-Questo repository contiene esercizi ed esempi relativi alla comunicazione tra dispositivi IoT, con particolare focus su MQTT (Message Queuing Telemetry Transport), sviluppati per il modulo **"Adv Networking: Comunicazione tra Oggetti e Standard di Interoperabilità"** del corso IoT 2025.
+Questo repository contiene esercizi ed esempi relativi alla comunicazione tra dispositivi IoT, con particolare focus su MQTT (Message Queuing Telemetry Transport), sviluppati per il modulo **"Protocolli IOT"** del corso Digital Solutions 2023-2025.
 
 ## Struttura del Repository
 
