@@ -1,0 +1,34 @@
+flowchart TD
+    %% Flowchart 1: Funzionamento Casetta IoT
+    subgraph "Funzionamento Casetta IoT"
+        A1([Inizio]) --> B1[Accensione del dispositivo IoT]
+        B1 --> C1[Connessione al broker MQTT]
+        C1 --> D1[Invio periodico dati sensore<br/>`water_coolers/cooler_001/readings`]
+        D1 --> E1[Ricezione comandi MQTT<br/>`commands/cooler_001/#`]
+        E1 --> F1{Validazione comandi}
+        F1 --> |Comandi validi| G1[Esecuzione comandi]
+        F1 --> |Comandi non validi| H1[Log errori<br/>Notifica stato comando non valido]
+        G1 --> I1[Invio conferma JSON<br/>stato comando eseguito]
+        H1 --> E1
+        I1 --> J1([Fine ciclo])
+    end
+
+    %% Flowchart 2: Ricezione e Memorizzazione Dati (Server)
+    subgraph "Ricezione e Memorizzazione Dati (Server)"
+        A2([Inizio]) --> B2[Connessione al broker MQTT]
+        B2 --> C2[Sottoscrizione al topic<br/>`water_coolers/cooler_001/readings`]
+        C2 --> D2[Ricezione dati sensore]
+        D2 --> E2{Validazione dati}
+        E2 --> |Dati validi| F2[Memorizzazione nel database]
+        E2 --> |Dati non validi| G2[Log anomalie<br/>Conservazione per analisi]
+        F2 --> H2[Elaborazione dei dati<br/>Calcolo statistiche flusso acqua]
+        G2 --> D2
+        H2 --> I2[Generazione report<br/>Statistiche settimanali flusso]
+        I2 --> J2([Fine processo])
+    end
+
+    %% Legenda
+    subgraph Legenda
+        K1([Inizio/Fine]) --- K2[Azione/Processo]
+        K2 --- K3{Decisione/Validazione}
+    end
