@@ -1,71 +1,133 @@
+
 using MQTTnet;
 using MQTTnet.Client;
-using System.Text.Json;
+using NetCoreClient.Commands;
 using System.Text;
+using System.Text.Json;
 
 namespace NetCoreClient.Protocols
 {
-    class Mqtt : ProtocolInterface, IDisposable
+    public class Mqtt : IDisposable
     {
         private readonly IMqttClient mqttClient;
-        
+
         public Mqtt(string brokerEndpoint)
         {
             var mqttFactory = new MqttFactory();
-    mqttClient = mqttFactory.CreateMqttClient();
-    
-    var options = new MqttClientOptionsBuilder()
-        .WithTcpServer("localhost", 1883)  // broker locale
-        .WithClientId($"water_cooler_{Guid.NewGuid()}")
-        .Build();
+            mqttClient = mqttFactory.CreateMqttClient();
 
-    mqttClient.ConnectAsync(options).GetAwaiter().GetResult();
-    Console.WriteLine("Connected to MQTT broker");
+            mqttClient.ConnectedAsync += e =>
+            {
+                Console.WriteLine("[LOG] Connected to MQTT broker successfully");
+                return Task.CompletedTask;
+            };
 
-            mqttClient.ApplicationMessageReceivedAsync += e =>
+            mqttClient.DisconnectedAsync += e =>
+            {
+                Console.WriteLine($"[LOG] Disconnected from MQTT broker: {e.Reason}");
+                return Task.CompletedTask;
+            };
+
+            var options = new MqttClientOptionsBuilder()
+                .WithTcpServer("localhost", 1883)
+                .WithClientId($"water_cooler_{Guid.NewGuid()}")
+                .Build();
+
+            try
+            {
+                mqttClient.ConnectAsync(options).GetAwaiter().GetResult();
+                Console.WriteLine("[LOG] Connected to MQTT broker");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Failed to connect to MQTT broker: {ex.Message}");
+                throw;
+            }
+
+            mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
                 string receivedTopic = e.ApplicationMessage.Topic;
                 string payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
-                Console.WriteLine($"Received message on topic {receivedTopic}: {payload}");
-                return Task.CompletedTask;
+
+                Console.WriteLine("[DEBUG] Message received from broker:");
+                Console.WriteLine($"[DEBUG] Topic: {receivedTopic}");
+                Console.WriteLine($"[DEBUG] Payload: {payload}");
+
+                if (receivedTopic.StartsWith("commands/"))
+                {
+                    Console.WriteLine("[DEBUG] Processing command...");
+                    try
+                    {
+                        CommandValidator.HandleCommand(receivedTopic, payload);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ERROR] Command processing failed: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"[DEBUG] Ignoring message on topic: {receivedTopic}");
+                }
+
+                await Task.CompletedTask;
             };
+
+
+
+            Subscribe("commands/cooler_001/#");
         }
 
         public async void Send(string data)
         {
             try
             {
-                // Estrai il coolerId dal JSON
-                var reading = JsonSerializer.Deserialize<JsonElement>(data);
-                string coolerId = reading.GetProperty("coolerId").GetString();
-                
-                // Costruisci il topic corretto
-                string topic = $"water_coolers/{coolerId}/readings";
-
-                var applicationMessage = new MqttApplicationMessageBuilder()
-                    .WithTopic(topic)
+                Console.WriteLine($"[LOG] Sending data: {data}");
+                var message = new MqttApplicationMessageBuilder()
+                    .WithTopic("water_coolers/cooler_001/readings")
                     .WithPayload(data)
-                    .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
-                    .WithRetainFlag(false)
                     .Build();
-
-                await mqttClient.PublishAsync(applicationMessage);
-                Console.WriteLine($"Published message to {topic}: {data}");
+                await mqttClient.PublishAsync(message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error publishing message: {ex.Message}");
-                throw;
+                Console.WriteLine($"[ERROR] Error sending data: {ex.Message}");
             }
         }
 
+        public async void Subscribe(string topic)
+        {
+            try
+            {
+                Console.WriteLine($"[LOG] Attempting to subscribe to topic: {topic}");
+
+                var response = await mqttClient.SubscribeAsync(new MqttClientSubscribeOptionsBuilder()
+                    .WithTopicFilter(f => { f.WithTopic(topic); })
+                    .Build());
+
+                if (response.Items.Any(item =>
+                    item.ResultCode == MqttClientSubscribeResultCode.GrantedQoS0 ||
+                    item.ResultCode == MqttClientSubscribeResultCode.GrantedQoS1 ||
+                    item.ResultCode == MqttClientSubscribeResultCode.GrantedQoS2))
+                {
+                    Console.WriteLine($"[LOG] Successfully subscribed to topic: {topic}");
+                }
+                else
+                {
+                    Console.WriteLine($"[ERROR] Subscription to topic {topic} was not granted");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Error subscribing to topic {topic}: {ex.Message}");
+            }
+        }
+
+
+
         public void Dispose()
         {
-            if (mqttClient.IsConnected)
-            {
-                mqttClient.DisconnectAsync().GetAwaiter().GetResult();
-                Console.WriteLine("Disconnected from MQTT broker");
-            }
+            mqttClient.DisconnectAsync().Wait();
         }
     }
 }

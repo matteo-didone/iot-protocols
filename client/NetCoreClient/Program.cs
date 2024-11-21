@@ -1,56 +1,38 @@
-﻿using NetCoreClient.Protocols;
-using NetCoreClient.Sensors;
+
+using System;
 using System.Text.Json;
+using System.Threading;
+using NetCoreClient.Protocols;
 
 class Program
 {
     static void Main(string[] args)
     {
-        // Inizializza i sensori
-        var waterFlowSensor = new VirtualWaterFlowSensor();
-        var waterTempSensor = new VirtualWaterTempSensor();
-
-        // Inizializza il protocollo MQTT
-        var protocol = new Mqtt("localhost:1883");
+        var protocol = new Mqtt("localhost");
 
         try
         {
             while (true)
             {
-                // Lettura e invio dati sensore flusso
-                var waterFlowData = new
+                var data = new
                 {
                     coolerId = "cooler_001",
                     measurement = "water_flow",
-                    value = waterFlowSensor.WaterFlow(),
+                    value = new Random().Next(0, 10),
                     timestamp = DateTime.UtcNow
                 };
-                protocol.Send(JsonSerializer.Serialize(waterFlowData));
 
-                // Lettura e invio dati sensore temperatura
-                var tempData = new
-                {
-                    coolerId = "cooler_001",
-                    measurement = "water_temperature",
-                    value = waterTempSensor.WaterTemperature(),
-                    timestamp = DateTime.UtcNow
-                };
-                protocol.Send(JsonSerializer.Serialize(tempData));
-
-                Console.WriteLine("Readings sent");
+                protocol.Send(JsonSerializer.Serialize(data));
                 Thread.Sleep(5000);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"[ERROR] {ex.Message}");
         }
         finally
         {
-            if (protocol is IDisposable disposableProtocol)
-            {
-                disposableProtocol.Dispose();
-            }
+            protocol.Dispose();
         }
     }
 }
