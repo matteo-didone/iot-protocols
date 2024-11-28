@@ -1,10 +1,11 @@
-
 using System.Text.Json;
 
 namespace NetCoreClient.Commands
 {
     public class CommandValidator
     {
+        public static event Action<string, bool>? PowerStateChanged;
+
         public static void HandleCommand(string topic, string payload)
         {
             Console.WriteLine("[DEBUG] Received command:");
@@ -21,7 +22,7 @@ namespace NetCoreClient.Commands
                 if (ValidateCommandFormat(root, out string validationError))
                 {
                     Console.WriteLine("[DEBUG] Command validation successful.");
-                    ProcessValidCommand(root);
+                    ProcessValidCommand(topic, root);
                 }
                 else
                 {
@@ -77,28 +78,27 @@ namespace NetCoreClient.Commands
             return true;
         }
 
-        private static void ProcessValidCommand(JsonElement command)
+        private static void ProcessValidCommand(string topic, JsonElement command)
         {
             string action = command.GetProperty("action").GetString()?.ToLower() ?? "unknown";
+            string coolerId = topic.Split('/')[1];
 
             switch (action)
             {
                 case "power":
                     bool powerState = command.GetProperty("state").GetBoolean();
                     Console.WriteLine($"[LOG] Power command received: {(powerState ? "ON" : "OFF")}");
-                    // Aggiungi la logica per accendere/spegnere il dispositivo
+                    PowerStateChanged?.Invoke(coolerId, powerState);
                     break;
 
                 case "night_light":
                     bool lightState = command.GetProperty("state").GetBoolean();
                     Console.WriteLine($"[LOG] Night Light command received: {(lightState ? "ON" : "OFF")}");
-                    // Aggiungi la logica per accendere/spegnere la luce notturna
                     break;
 
                 case "maintenance":
                     bool maintenanceMode = command.GetProperty("enabled").GetBoolean();
                     Console.WriteLine($"[LOG] Maintenance command received: {(maintenanceMode ? "ENABLED" : "DISABLED")}");
-                    // Aggiungi la logica per abilitare/disabilitare la manutenzione
                     break;
 
                 default:

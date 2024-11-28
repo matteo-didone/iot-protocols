@@ -1,4 +1,3 @@
-
 using MQTTnet;
 using MQTTnet.Client;
 using NetCoreClient.Commands;
@@ -10,6 +9,12 @@ namespace NetCoreClient.Protocols
     public class Mqtt : IDisposable
     {
         private readonly IMqttClient mqttClient;
+        public event Action RequestStatusUpdate;
+
+        public IMqttClient GetMqttClient()
+        {
+            return mqttClient;
+        }
 
         public Mqtt(string brokerEndpoint)
         {
@@ -53,7 +58,12 @@ namespace NetCoreClient.Protocols
                 Console.WriteLine($"[DEBUG] Topic: {receivedTopic}");
                 Console.WriteLine($"[DEBUG] Payload: {payload}");
 
-                if (receivedTopic.StartsWith("commands/"))
+                if (receivedTopic == "commands/status")
+                {
+                    Console.WriteLine("[DEBUG] Status request received");
+                    RequestStatusUpdate?.Invoke();
+                }
+                else if (receivedTopic.StartsWith("commands/"))
                 {
                     Console.WriteLine("[DEBUG] Processing command...");
                     try
@@ -72,19 +82,15 @@ namespace NetCoreClient.Protocols
 
                 await Task.CompletedTask;
             };
-
-
-
-            Subscribe("commands/cooler_001/#");
         }
 
-        public async void Send(string data)
+        public async void Send(string data, string coolerId)
         {
             try
             {
                 Console.WriteLine($"[LOG] Sending data: {data}");
                 var message = new MqttApplicationMessageBuilder()
-                    .WithTopic("water_coolers/cooler_001/readings")
+                    .WithTopic($"water_coolers/{coolerId}/readings")
                     .WithPayload(data)
                     .Build();
                 await mqttClient.PublishAsync(message);
@@ -122,8 +128,6 @@ namespace NetCoreClient.Protocols
                 Console.WriteLine($"[ERROR] Error subscribing to topic {topic}: {ex.Message}");
             }
         }
-
-
 
         public void Dispose()
         {
