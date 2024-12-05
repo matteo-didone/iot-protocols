@@ -1,134 +1,102 @@
+# Water Cooler Monitoring System with RabbitMQ
 
-# IoT Protocols: Esempi di Comunicazione MQTT
+## Architettura del Sistema
 
-Questo repository contiene esercizi ed esempi relativi alla comunicazione tra dispositivi IoT, con particolare focus su MQTT (Message Queuing Telemetry Transport), sviluppati per il modulo **"Protocolli IOT"** del corso Digital Solutions 2023-2025.
+Il sistema utilizza RabbitMQ come message broker, implementando un pattern di comunicazione basato su exchange e code. L'architettura è stata progettata per gestire efficacemente il monitoraggio di multiple casette dell'acqua.
 
-## Struttura del Repository
+### Exchange e Routing
 
-- **`client/NetCoreClient`**  
-  Contiene un'applicazione sviluppata in C# con .NET Core che simula un dispositivo IoT. Questo client invia dati periodici al broker MQTT e riceve comandi specifici per eseguire azioni.
+- **Exchange Principale**: `water_coolers`
+  - Tipo: Topic
+  - Durabile: Sì
+  - Gestisce tutti i messaggi del sistema
 
-- **`server`**  
-  Include codice e configurazioni per la gestione dei dati ricevuti dal client e la loro memorizzazione in un database.
+### Pattern di Comunicazione
 
-- **`README.md`**  
-  Questo file fornisce una panoramica dettagliata del progetto e istruzioni per configurare e utilizzare il codice.
-
-## Funzionalità Principali
-
-### Client IoT (NetCoreClient)
-
-1. **Invio Dati al Broker MQTT**  
-   Il client invia dati periodicamente al broker MQTT sul topic `water_coolers/cooler_001/readings`.  
-   I dati includono: 
-   - `coolerId`: l'ID del dispositivo
-   - `measurement`: tipo di misurazione (es. "water_flow")
-   - `value`: valore della misurazione
-   - `timestamp`: orario del rilevamento
-
-2. **Ricezione di Comandi**  
-   Il client ascolta comandi sui topic `commands/cooler_001/#` e li elabora.  
-   Comandi supportati:  
-   - **`power`**: accensione/spegnimento del dispositivo  
-   - **`night_light`**: accensione/spegnimento della luce notturna  
-   - **`maintenance`**: abilitazione/disabilitazione della modalità manutenzione  
-
-3. **Validazione dei Comandi**  
-   Ogni comando ricevuto viene validato. I messaggi devono essere in formato JSON con campi corretti:
-   - `action`: tipo di comando (`power`, `night_light`, `maintenance`)
-   - `state` o `enabled`: stato del comando (booleano)
-
-4. **Log Dettagliati**  
-   Ogni operazione viene registrata nel terminale per facilitare il debug e il monitoraggio.
-
-### Server
-
-Il server è progettato per ricevere i dati dal client, memorizzarli in un database e fornire un'interfaccia per l'analisi.
-
-## Configurazione
-
-### Prerequisiti
-
-- **Broker MQTT**: Il progetto utilizza Mosquitto come broker MQTT. Installalo seguendo le istruzioni del [sito ufficiale](https://mosquitto.org/).
-- **.NET Core SDK**: Per eseguire il client, installa il .NET Core SDK. Puoi scaricarlo da [Microsoft](https://dotnet.microsoft.com/).
-
-### Setup del Broker MQTT
-
-1. Assicurati che Mosquitto sia installato e in esecuzione sulla porta predefinita `1883`:
-   ```bash
-   mosquitto -v
-   ```
-
-2. Configura Mosquitto per supportare connessioni locali.
-
-### Esecuzione del Client
-
-1. Naviga nella directory del client:
-   ```bash
-   cd client/NetCoreClient
-   ```
-
-2. Esegui l'applicazione:
-   ```bash
-   dotnet run
-   ```
-
-Il client si connetterà automaticamente al broker MQTT e inizierà a inviare dati.
-
-### Invio di Comandi
-
-Utilizza un client MQTT come `mosquitto_pub` per inviare comandi al client. Esempi:
-
-- **Accensione del dispositivo**:
-  ```bash
-  mosquitto_pub -h localhost -p 1883 -t "commands/cooler_001/power" -m '{"action": "power", "state": true}'
-  ```
-
-- **Attivazione della modalità manutenzione**:
-  ```bash
-  mosquitto_pub -h localhost -p 1883 -t "commands/cooler_001/maintenance" -m '{"action": "maintenance", "enabled": true}'
-  ```
-
-- **Accensione della luce notturna**:
-  ```bash
-  mosquitto_pub -h localhost -p 1883 -t "commands/cooler_001/night_light" -m '{"action": "night_light", "state": true}'
-  ```
-
-### Visualizzazione Dati
-
-Per visualizzare i dati ricevuti dal broker MQTT, utilizza un client MQTT di sottoscrizione:
-```bash
-mosquitto_sub -h localhost -p 1883 -t "water_coolers/cooler_001/readings"
+```
+[Casette] → [Exchange] → [Binding Rules] → [Code] → [Consumers]
 ```
 
-### Esempio di Output dei Dati
+### Struttura delle Code
 
-Esempio di messaggio pubblicato sul topic `water_coolers/cooler_001/readings`:
+Per ogni casetta vengono create code specifiche:
+- `readings.<cooler_id>`: per le letture dei flussi d'acqua
+- `commands.<cooler_id>`: per i comandi di controllo
+- `data.<cooler_id>`: per le statistiche e i dati aggregati
 
-```json
-{
-  "coolerId": "cooler_001",
-  "measurement": "water_flow",
-  "value": 3,
-  "timestamp": "2024-11-21T11:12:33.906174Z"
-}
+### Routing Keys
+
+Il sistema utilizza routing keys strutturate:
+- `water_coolers.<cooler_id>.readings`: per le letture
+- `water_coolers.<cooler_id>.data`: per i dati statistici
+- `water_coolers.list`: per la lista delle casette
+- `water_coolers.<cooler_id>.commands`: per i comandi
+
+### Binding Rules
+
+Le regole di binding permettono di:
+- Instradare i messaggi alla coda corretta in base al cooler_id
+- Separare i flussi di dati dai comandi
+- Gestire le risposte in modo indipendente
+
+### Flusso dei Dati
+
+1. **Pubblicazione**:
+   - Le casette pubblicano i dati sull'exchange `water_coolers`
+   - Ogni messaggio include il cooler_id nel routing key
+
+2. **Routing**:
+   - L'exchange instrada i messaggi alle code appropriate
+   - Il routing è basato sui pattern delle routing keys
+
+3. **Consumo**:
+   - Consumer dedicati processano i messaggi dalle code
+   - Ogni consumer gestisce uno specifico tipo di messaggio
+
+### Implementazione
+
+#### Client (.NET)
+```csharp
+// Invio letture
+protocol.SendCommand($"water_coolers.{coolerId}.readings", data);
+
+// Richiesta dati
+protocol.SendCommand($"water_coolers.{coolerId}.data", "{}");
+
+// Richiesta lista casette
+protocol.SendCommand("water_coolers.list", "{}");
 ```
 
-## Test dei Comandi: Casi Limite
+#### Server (Node.js)
+```javascript
+// Binding per le letture
+channel.bindQueue(readingsQueue, exchangeName, 'water_coolers.*.readings');
 
-Testa i seguenti scenari per validare la robustezza della tua applicazione:
+// Binding per i comandi
+channel.bindQueue(commandsQueue, exchangeName, 'water_coolers.*.commands');
 
-1. **Comandi Validi**
-   - `{"action": "power", "state": true}`
-   - `{"action": "night_light", "state": false}`
-   - `{"action": "maintenance", "enabled": true}`
+// Binding per i dati
+channel.bindQueue(dataQueue, exchangeName, 'water_coolers.*.data');
+```
 
-2. **Comandi Errati**
-   - Campi mancanti: `{"action": "power"}`
-   - Tipo errato: `{"action": "power", "state": "ON"}`
-   - Extra campi: `{"action": "power", "state": true, "extra_field": "unexpected"}`
-   - Comando non riconosciuto: `{"action": "invalid", "state": true}`
+### Vantaggi dell'Architettura
 
-## Licenza
+1. **Scalabilità**:
+   - Facile aggiunta di nuove casette
+   - Possibilità di scalare i consumer indipendentemente
 
-Questo progetto è distribuito sotto la licenza [MIT](LICENSE). 
+2. **Separazione delle Responsabilità**:
+   - Flussi di dati separati dai comandi
+   - Code dedicate per ogni tipo di messaggio
+
+3. **Affidabilità**:
+   - Code durabili per la persistenza dei messaggi
+   - Gestione automatica del reconnect
+
+4. **Flessibilità**:
+   - Routing configurabile tramite binding rules
+   - Facile aggiunta di nuovi tipi di messaggi
+
+### Conclusioni
+
+Questa implementazione fornisce una base solida per il monitoraggio delle casette dell'acqua, con una chiara separazione tra dati e comandi, e la possibilità di scalare facilmente il sistema aggiungendo nuove casette o funzionalità.
