@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "dgSpecHash": "GnLGmBse+xMLSKID8ECt6vzr0uHTQpnyeAswKxro0CX/LHjhI/eq+2PjhjJDBeErNp15iJ6n/r15QSZ3So2OLw==",
+  "dgSpecHash": "mPETddrOyVLtZcL+0+8wxx/AU7X5nTkIuwJZpAMQ+uhR2jT0zUwu0GqbTfzJrl/FeHcxXk5V+ImdIGl6Buce1A==",
   "success": true,
   "projectFilePath": "/Users/matteodidone/VS Code Projects/iot-protocols-1/client/NetCoreClient/NetCoreClient.csproj",
   "expectedPackageFiles": [
-    "/Users/matteodidone/.nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/microsoft.bcl.asyncinterfaces.8.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/microsoft.extensions.configuration/6.0.0/microsoft.extensions.configuration.6.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/microsoft.extensions.configuration.abstractions/6.0.0/microsoft.extensions.configuration.abstractions.6.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/microsoft.extensions.configuration.fileextensions/6.0.0/microsoft.extensions.configuration.fileextensions.6.0.0.nupkg.sha512",
@@ -14,15 +13,12 @@
     "/Users/matteodidone/.nuget/packages/microsoft.extensions.filesystemglobbing/6.0.0/microsoft.extensions.filesystemglobbing.6.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/microsoft.extensions.primitives/6.0.0/microsoft.extensions.primitives.6.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/mqttnet/4.3.7.1207/mqttnet.4.3.7.1207.nupkg.sha512",
-    "/Users/matteodidone/.nuget/packages/rabbitmq.client/7.0.0/rabbitmq.client.7.0.0.nupkg.sha512",
-    "/Users/matteodidone/.nuget/packages/system.diagnostics.diagnosticsource/8.0.1/system.diagnostics.diagnosticsource.8.0.1.nupkg.sha512",
-    "/Users/matteodidone/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
+    "/Users/matteodidone/.nuget/packages/rabbitmq.client/6.5.0/rabbitmq.client.6.5.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/system.memory/4.5.5/system.memory.4.5.5.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/system.text.encodings.web/6.0.0/system.text.encodings.web.6.0.0.nupkg.sha512",
     "/Users/matteodidone/.nuget/packages/system.text.json/6.0.0/system.text.json.6.0.0.nupkg.sha512",
-    "/Users/matteodidone/.nuget/packages/system.threading.channels/8.0.0/system.threading.channels.8.0.0.nupkg.sha512",
-    "/Users/matteodidone/.nuget/packages/system.threading.ratelimiting/8.0.0/system.threading.ratelimiting.8.0.0.nupkg.sha512"
+    "/Users/matteodidone/.nuget/packages/system.threading.channels/7.0.0/system.threading.channels.7.0.0.nupkg.sha512"
   ],
   "logs": []
 }
