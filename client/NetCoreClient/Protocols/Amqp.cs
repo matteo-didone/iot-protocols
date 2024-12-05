@@ -1,21 +1,19 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using RabbitMQ.Client.Framing;
 using System;
 using System.Text;
 using System.Collections.Generic;
-using System.Linq;
-using NetCoreClient.Protocols;
 
 namespace NetCoreClient.Protocols
 {
-    public class Amqp : ProtocolInterface, IDisposable
+    public class Amqp : IProtocolInterface
     {
         private readonly IConnection _connection;
         private readonly IModel _channel;
         private readonly string _exchangeName = "water_coolers";
+        private readonly Dictionary<string, string> _queueBindings = new();
 
-        public event EventHandler<CommandEventArgs> OnCommandReceived;
+        public event EventHandler<CommandEventArgs>? OnCommandReceived;
 
         public Amqp(string hostName)
         {
@@ -26,6 +24,7 @@ namespace NetCoreClient.Protocols
                 _connection = factory.CreateConnection();
                 _channel = _connection.CreateModel();
 
+                // Declare exchange
                 _channel.ExchangeDeclare(_exchangeName, ExchangeType.Topic, true);
 
                 Console.WriteLine("[LOG] Connected to AMQP broker successfully");
@@ -41,9 +40,7 @@ namespace NetCoreClient.Protocols
         {
             try
             {
-                Console.WriteLine($"[LOG] Sending data: {data}");
                 var body = Encoding.UTF8.GetBytes(data);
-
                 var properties = _channel.CreateBasicProperties();
                 properties.Persistent = true;
 
@@ -52,6 +49,8 @@ namespace NetCoreClient.Protocols
                     routingKey: "readings",
                     basicProperties: properties,
                     body: body);
+
+                Console.WriteLine($"[LOG] Sent data: {data}");
             }
             catch (Exception ex)
             {
@@ -64,13 +63,15 @@ namespace NetCoreClient.Protocols
             try
             {
                 var body = Encoding.UTF8.GetBytes(payload);
-                var routingKey = topic.Replace("/", ".");
+                var routingKey = topic;
 
                 _channel.BasicPublish(
                     exchange: _exchangeName,
                     routingKey: routingKey,
                     basicProperties: null,
                     body: body);
+
+                Console.WriteLine($"[LOG] Sent command to {routingKey}: {payload}");
             }
             catch (Exception ex)
             {
@@ -82,22 +83,33 @@ namespace NetCoreClient.Protocols
         {
             try
             {
-                Console.WriteLine($"[LOG] Attempting to subscribe to topic: {topic}");
+                var routingKey = topic;
+                var queueName = $"queue_{Guid.NewGuid()}";
 
-                var queueName = _channel.QueueDeclare().QueueName;
-                var routingKey = topic.Replace("/", ".").Replace("#", "*");
+                // Declare a queue
+                _channel.QueueDeclare(queueName, true, false, true);
 
+                // Per il pattern matching dei topic, sostituiamo + con *
+                if (routingKey.Contains("+"))
+                {
+                    routingKey = routingKey.Replace("+", "*");
+                }
+
+                Console.WriteLine($"[LOG] Binding queue {queueName} to exchange {_exchangeName} with routing key {routingKey}");
+
+                // Bind the queue to the exchange
                 _channel.QueueBind(queueName, _exchangeName, routingKey);
 
+                // Set up consumer
                 var consumer = new EventingBasicConsumer(_channel);
                 consumer.Received += (model, ea) =>
                 {
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
-                    var receivedTopic = ea.RoutingKey.Replace(".", "/");
 
+                    // Notifica il messaggio con il routing key originale
                     OnCommandReceived?.Invoke(this, new CommandEventArgs(
-                        receivedTopic,
+                        ea.RoutingKey,
                         message
                     ));
                 };
@@ -106,6 +118,9 @@ namespace NetCoreClient.Protocols
                     queue: queueName,
                     autoAck: true,
                     consumer: consumer);
+
+                _queueBindings[topic] = queueName;
+                Console.WriteLine($"[LOG] Subscribed to topic: {topic} with queue {queueName}");
             }
             catch (Exception ex)
             {
@@ -117,10 +132,12 @@ namespace NetCoreClient.Protocols
         {
             try
             {
-                // In AMQP, possiamo eliminare la coda o rimuovere il binding
-                // Per semplicità, qui non facciamo nulla dato che le code sono
-                // esclusive e verranno eliminate automaticamente alla chiusura
-                Console.WriteLine($"[LOG] Unsubscribe from topic: {topic}");
+                if (_queueBindings.TryGetValue(topic, out string? queueName) && queueName != null)
+                {
+                    _channel.QueueDelete(queueName);
+                    _queueBindings.Remove(topic);
+                    Console.WriteLine($"[LOG] Unsubscribed from topic: {topic}");
+                }
             }
             catch (Exception ex)
             {
@@ -130,8 +147,27 @@ namespace NetCoreClient.Protocols
 
         public void Dispose()
         {
-            _channel?.Dispose();
-            _connection?.Dispose();
+            try
+            {
+                foreach (var queueName in _queueBindings.Values)
+                {
+                    try
+                    {
+                        _channel?.QueueDelete(queueName);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ERROR] Error deleting queue {queueName}: {ex.Message}");
+                    }
+                }
+
+                _channel?.Dispose();
+                _connection?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Error during disposal: {ex.Message}");
+            }
         }
     }
 }

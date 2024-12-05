@@ -9,16 +9,11 @@ using NetCoreClient.Monitoring;
 class Program
 {
     static async Task Main(string[] args)
-
     {
-        var protocol = new Mqtt("localhost");
-        var monitor = new WaterCoolerMonitor(protocol.GetMqttClient());
+        var protocol = new Amqp("localhost");
+        var monitor = new WaterCoolerMonitor(protocol);
         var random = new Random();
 
-        // Sottoscrivi all'evento di richiesta status
-        protocol.RequestStatusUpdate += () => monitor.PrintCurrentStatus();
-
-        // Lista delle casette
         var coolerIds = new List<string>
         {
             "cooler_001",
@@ -29,21 +24,15 @@ class Program
 
         try
         {
-            // Avvia il monitoraggio
             await monitor.StartMonitoring();
             Console.WriteLine("Monitoring started...");
 
-            // Sottoscrivi ai comandi per tutte le casette
-            foreach (var coolerId in coolerIds)
-            {
-                protocol.Subscribe($"commands/{coolerId}/#");
-            }
-            // Sottoscrivi al comando di status
-            protocol.Subscribe("commands/status");
-
             while (true)
             {
-                // Nel ciclo while del Program.cs
+                // Richiedi lista delle casette
+                protocol.SendCommand("water_coolers.list", "{}");
+
+                // Invia i dati simulati per ogni casetta
                 foreach (var coolerId in coolerIds)
                 {
                     var data = new
@@ -53,15 +42,12 @@ class Program
                         value = random.NextDouble() * 0.4 + 0.1,
                         timestamp = DateTime.UtcNow
                     };
-                    // Imposta retain=true per mantenere l'ultimo stato
-                    protocol.Send(JsonSerializer.Serialize(data), coolerId, retain: true);
-                }
 
-                // Stampa lo stato di tutte le casette
-                Console.WriteLine("\nPer testare i comandi, usa mosquitto_pub. Esempi:");
-                Console.WriteLine("Accensione: mosquitto_pub -h localhost -p 1883 -t \"commands/cooler_001/power\" -m '{\"action\": \"power\", \"state\": true}'");
-                Console.WriteLine("Spegnimento: mosquitto_pub -h localhost -p 1883 -t \"commands/cooler_001/power\" -m '{\"action\": \"power\", \"state\": false}'");
-                Console.WriteLine("Status: mosquitto_pub -h localhost -p 1883 -t \"commands/status\" -m \"show\"");
+                    protocol.SendCommand($"water_coolers.{coolerId}.readings",
+                        JsonSerializer.Serialize(data));
+
+                    protocol.SendCommand($"water_coolers.{coolerId}.data", "{}");
+                }
 
                 monitor.PrintCurrentStatus();
                 Thread.Sleep(5000);
