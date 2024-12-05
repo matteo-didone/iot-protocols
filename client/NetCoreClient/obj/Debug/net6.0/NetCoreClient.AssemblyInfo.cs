@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NetCoreClient")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5f65613aa3c0216992cc623ece8da7a415592b61")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
 [assembly: System.Reflection.AssemblyProductAttribute("NetCoreClient")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NetCoreClient")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -80,16 +80,28 @@ namespace NetCoreClient.Monitoring
 
                 var cooler = _coolerStatuses[reading.CoolerId];
 
+                // Aggiorna i litri solo se la casetta è accesa
                 if (cooler.IsPoweredOn && reading.Measurement == "water_flow")
                 {
-                    cooler.TotalLitersDispensed += reading.Value;
+                    // Arrotonda a 2 decimali per una visualizzazione più pulita
+                    cooler.TotalLitersDispensed = Math.Round(
+                        cooler.TotalLitersDispensed + reading.Value,
+                        2
+                    );
                     cooler.LastUpdateTime = reading.Timestamp;
-                    Console.WriteLine($"[LOG] Updated water flow for {reading.CoolerId}: +{reading.Value}L, Total: {cooler.TotalLitersDispensed:F2}L");
+
+                    // Log più dettagliato
+                    Console.WriteLine($"[LOG] Erogazione acqua - Casetta {reading.CoolerId}:");
+                    Console.WriteLine($"      + {reading.Value:F2}L (Totale: {cooler.TotalLitersDispensed:F2}L)");
+                }
+                else if (!cooler.IsPoweredOn && reading.Value > 0)
+                {
+                    Console.WriteLine($"[LOG] Ignorata erogazione per {reading.CoolerId} - Casetta spenta");
                 }
             }
             catch (JsonException ex)
             {
-                Console.WriteLine($"Error parsing reading: {ex.Message}");
+                Console.WriteLine($"[ERROR] Errore parsing lettura: {ex.Message}");
             }
         }
 

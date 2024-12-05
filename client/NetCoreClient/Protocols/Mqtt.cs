@@ -84,14 +84,15 @@ namespace NetCoreClient.Protocols
             };
         }
 
-        public async void Send(string data, string coolerId)
+        public async void Send(string data, string coolerId, bool retain = false) // Aggiungiamo il parametro retain
         {
             try
             {
-                Console.WriteLine($"[LOG] Sending data: {data}");
+                Console.WriteLine($"[LOG] Sending data: {data} (retain: {retain})");
                 var message = new MqttApplicationMessageBuilder()
                     .WithTopic($"water_coolers/{coolerId}/readings")
                     .WithPayload(data)
+                    .WithRetainFlag(retain) // Impostiamo la retain flag
                     .Build();
                 await mqttClient.PublishAsync(message);
             }

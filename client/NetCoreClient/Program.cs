@@ -17,7 +17,7 @@ class Program
 
         // Sottoscrivi all'evento di richiesta status
         protocol.RequestStatusUpdate += () => monitor.PrintCurrentStatus();
-        
+
         // Lista delle casette
         var coolerIds = new List<string>
         {
@@ -43,18 +43,18 @@ class Program
 
             while (true)
             {
-                // Simula l'invio di dati da tutte le casette
+                // Nel ciclo while del Program.cs
                 foreach (var coolerId in coolerIds)
                 {
                     var data = new
                     {
                         coolerId = coolerId,
                         measurement = "water_flow",
-                        value = random.Next(0, 10),
+                        value = random.NextDouble() * 0.4 + 0.1,
                         timestamp = DateTime.UtcNow
                     };
-
-                    protocol.Send(JsonSerializer.Serialize(data), coolerId);
+                    // Imposta retain=true per mantenere l'ultimo stato
+                    protocol.Send(JsonSerializer.Serialize(data), coolerId, retain: true);
                 }
 
                 // Stampa lo stato di tutte le casette
@@ -62,7 +62,7 @@ class Program
                 Console.WriteLine("Accensione: mosquitto_pub -h localhost -p 1883 -t \"commands/cooler_001/power\" -m '{\"action\": \"power\", \"state\": true}'");
                 Console.WriteLine("Spegnimento: mosquitto_pub -h localhost -p 1883 -t \"commands/cooler_001/power\" -m '{\"action\": \"power\", \"state\": false}'");
                 Console.WriteLine("Status: mosquitto_pub -h localhost -p 1883 -t \"commands/status\" -m \"show\"");
-                
+
                 monitor.PrintCurrentStatus();
                 Thread.Sleep(5000);
             }
