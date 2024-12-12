@@ -1,0 +1,82 @@
+flowchart TB
+    subgraph Sensors["Water Cooler Sensors"]
+        WF["Water Flow Sensor"]
+        WT["Water Temperature Sensor"]
+    end
+
+    subgraph Clients[".NET Client Process"]
+        subgraph ClientHandler["Protocol Handler"]
+            WF --> |Readings| CP["Command Processor"]
+            WT --> |Readings| CP
+            CP --> |"Format & Send"| CH["AMQP Handler"]
+        end
+        
+        subgraph Monitor["Monitor"]
+            MON["Status Monitor"]
+            STAT["Statistics Display"]
+        end
+    end
+
+    subgraph Exchange["AMQP Exchange"]
+        EX["water_coolers\nTopic Exchange"]
+    end
+
+    subgraph Queues["Message Queues"]
+        R["Readings Queue\nwater_coolers.*.readings"]
+        D["Data Queue\nwater_coolers.*.data"]
+        L["List Queue\nwater_coolers.list"]
+        C["Commands Queue\nwater_coolers.*.commands"]
+    end
+
+    subgraph Server["Node.js Server"]
+        subgraph Handlers["Message Handlers"]
+            RH["Readings Handler"]
+            DH["Data Handler"]
+            LH["List Handler"]
+            CH2["Commands Handler"]
+        end
+        
+        subgraph Database["Storage Layer"]
+            DB[(MongoDB)]
+        end
+        
+        subgraph Analytics["Analytics Engine"]
+            CALC["Statistics Calculator"]
+            AGG["Data Aggregator"]
+        end
+    end
+
+    CH --> |"Publish"| EX
+    EX --> |"Route"| R
+    EX --> |"Route"| D
+    EX --> |"Route"| L
+    EX --> |"Route"| C
+
+    R --> |"Consume"| RH
+    D --> |"Consume"| DH
+    L --> |"Consume"| LH
+    C --> |"Consume"| CH2
+
+    RH --> |"Store"| DB
+    DH --> |"Query"| DB
+    LH --> |"Query"| DB
+
+    DB --> |"Data"| CALC
+    CALC --> |"Results"| AGG
+    AGG --> |"Response"| EX
+
+    EX --> |"Response"| CH
+    CH --> |"Update"| MON
+    MON --> |"Display"| STAT
+
+    classDef sensor fill:#f9f,stroke:#333,stroke-width:2px
+    classDef client fill:#bbf,stroke:#333,stroke-width:2px
+    classDef exchange fill:#ff9,stroke:#333,stroke-width:2px
+    classDef queue fill:#bfb,stroke:#333,stroke-width:2px
+    classDef server fill:#fbb,stroke:#333,stroke-width:2px
+    
+    class WF,WT sensor
+    class CP,CH,MON,STAT client
+    class EX exchange
+    class R,D,L,C queue
+    class RH,DH,LH,CH2,CALC,AGG server
