@@ -1,61 +1,86 @@
 using System;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using NetCoreClient.Protocols;
-using System.Collections.Generic;
 using NetCoreClient.Monitoring;
+using NetCoreClient.Sensors;
 
 class Program
 {
     static async Task Main(string[] args)
     {
+        if (args.Length != 1)
+        {
+            Console.WriteLine("Usage: program <cooler_id>");
+            Console.WriteLine("Example: program cooler_001");
+            return;
+        }
+
+        string coolerId = args[0];
         var protocol = new Amqp("localhost");
         var monitor = new WaterCoolerMonitor(protocol);
-        var random = new Random();
 
-        var coolerIds = new List<string>
-        {
-            "cooler_001",
-            "cooler_002",
-            "cooler_003",
-            "cooler_004"
-        };
+        // Inizializza i sensori virtuali
+        var waterFlowSensor = new VirtualWaterFlowSensor();
+        var waterTempSensor = new VirtualWaterTempSensor();
 
         try
         {
             await monitor.StartMonitoring();
-            Console.WriteLine("Monitoring started...");
+            Console.WriteLine($"Started monitoring for cooler {coolerId}");
+
+            // Sottoscrivi solo ai topic di risposta specifici per questo cooler
+            protocol.Subscribe($"water_coolers.{coolerId}.readings.response");
+            protocol.Subscribe($"water_coolers.{coolerId}.data.response");
 
             while (true)
             {
-                // Richiedi lista delle casette
-                protocol.SendCommand("water_coolers.list", "{}");
-
-                // Invia i dati simulati per ogni casetta
-                foreach (var coolerId in coolerIds)
+                try
                 {
-                    var data = new
+                    // Invia lettura del flusso d'acqua
+                    var flowData = new
                     {
                         coolerId = coolerId,
                         measurement = "water_flow",
-                        value = random.NextDouble() * 0.4 + 0.1,
+                        value = waterFlowSensor.WaterFlow(),
                         timestamp = DateTime.UtcNow
                     };
 
                     protocol.SendCommand($"water_coolers.{coolerId}.readings",
-                        JsonSerializer.Serialize(data));
+                        JsonSerializer.Serialize(flowData));
 
+                    // Invia lettura della temperatura
+                    var tempData = new
+                    {
+                        coolerId = coolerId,
+                        measurement = "water_temperature",
+                        value = waterTempSensor.WaterTemperature(),
+                        timestamp = DateTime.UtcNow
+                    };
+
+                    protocol.SendCommand($"water_coolers.{coolerId}.readings",
+                        JsonSerializer.Serialize(tempData));
+
+                    // Richiedi dati aggiornati
                     protocol.SendCommand($"water_coolers.{coolerId}.data", "{}");
-                }
 
-                monitor.PrintCurrentStatus();
-                Thread.Sleep(5000);
+                    // Stampa lo stato corrente
+                    monitor.PrintCurrentStatus();
+
+                    // Attendi prima della prossima lettura
+                    await Task.Delay(5000);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] Error during sensor reading: {ex.Message}");
+                    await Task.Delay(1000); // Breve attesa in caso di errore
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] {ex.Message}");
+            Console.WriteLine($"[ERROR] Fatal error: {ex.Message}");
+            Console.WriteLine(ex.StackTrace);
         }
         finally
         {

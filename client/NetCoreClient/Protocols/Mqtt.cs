@@ -9,7 +9,7 @@ namespace NetCoreClient.Protocols
     public class Mqtt : IDisposable
     {
         private readonly IMqttClient mqttClient;
-        public event Action RequestStatusUpdate;
+        public event Action? RequestStatusUpdate;  // Modificato per rimuovere il warning
 
         public IMqttClient GetMqttClient()
         {
@@ -34,7 +34,7 @@ namespace NetCoreClient.Protocols
             };
 
             var options = new MqttClientOptionsBuilder()
-                .WithTcpServer("localhost", 1883)
+                .WithTcpServer(brokerEndpoint, 1883)
                 .WithClientId($"water_cooler_{Guid.NewGuid()}")
                 .Build();
 
@@ -49,6 +49,11 @@ namespace NetCoreClient.Protocols
                 throw;
             }
 
+            SetupMessageHandlers();
+        }
+
+        private void SetupMessageHandlers()
+        {
             mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
                 string receivedTopic = e.ApplicationMessage.Topic;
@@ -75,16 +80,12 @@ namespace NetCoreClient.Protocols
                         Console.WriteLine($"[ERROR] Command processing failed: {ex.Message}");
                     }
                 }
-                else
-                {
-                    Console.WriteLine($"[DEBUG] Ignoring message on topic: {receivedTopic}");
-                }
 
                 await Task.CompletedTask;
             };
         }
 
-        public async void Send(string data, string coolerId, bool retain = false) // Aggiungiamo il parametro retain
+        public async void Send(string data, string coolerId, bool retain = false)
         {
             try
             {
@@ -92,7 +93,7 @@ namespace NetCoreClient.Protocols
                 var message = new MqttApplicationMessageBuilder()
                     .WithTopic($"water_coolers/{coolerId}/readings")
                     .WithPayload(data)
-                    .WithRetainFlag(retain) // Impostiamo la retain flag
+                    .WithRetainFlag(retain)
                     .Build();
                 await mqttClient.PublishAsync(message);
             }
@@ -107,7 +108,6 @@ namespace NetCoreClient.Protocols
             try
             {
                 Console.WriteLine($"[LOG] Attempting to subscribe to topic: {topic}");
-
                 var response = await mqttClient.SubscribeAsync(new MqttClientSubscribeOptionsBuilder()
                     .WithTopicFilter(f => { f.WithTopic(topic); })
                     .Build());
@@ -132,7 +132,8 @@ namespace NetCoreClient.Protocols
 
         public void Dispose()
         {
-            mqttClient.DisconnectAsync().Wait();
+            mqttClient?.DisconnectAsync().Wait();
+            mqttClient?.Dispose();
         }
     }
 }

@@ -6,6 +6,15 @@ using NetCoreClient.Protocols;
 
 namespace NetCoreClient.Monitoring
 {
+    public class StatsInfo
+    {
+        public double Average { get; set; }
+        public double Min { get; set; }
+        public double Max { get; set; }
+        public double LastValue { get; set; }
+        public DateTime LastUpdate { get; set; }
+    }
+
     public class WaterCoolerStatus
     {
         public string CoolerId { get; set; } = string.Empty;
@@ -13,6 +22,7 @@ namespace NetCoreClient.Monitoring
         public double TotalLitersDispensed { get; set; }
         public DateTime LastUpdateTime { get; set; }
         public Dictionary<string, double> LastReadings { get; set; } = new();
+        public Dictionary<string, StatsInfo> Stats { get; set; } = new();
     }
 
     public class WaterCoolerMonitor
@@ -30,9 +40,6 @@ namespace NetCoreClient.Monitoring
         public async Task StartMonitoring()
         {
             Console.WriteLine("[LOG] Starting monitoring...");
-            _protocol.Subscribe("water_coolers.+.readings.response");
-            _protocol.Subscribe("water_coolers.+.data.response");
-            _protocol.Subscribe("water_coolers.list.response");
             await Task.CompletedTask;
         }
 
@@ -40,6 +47,12 @@ namespace NetCoreClient.Monitoring
         {
             try
             {
+                // Processa solo i messaggi che terminano con .response
+                if (!e.Topic.EndsWith(".response"))
+                {
+                    return;
+                }
+
                 Console.WriteLine($"[LOG] Received message on topic: {e.Topic}");
                 Console.WriteLine($"[LOG] Message payload: {e.Payload}");
 
@@ -53,12 +66,7 @@ namespace NetCoreClient.Monitoring
                     return;
                 }
 
-                // Controllo del topic senza slash
-                if (e.Topic == "water_coolers.list.response")
-                {
-                    HandleListResponse(root);
-                }
-                else if (e.Topic.EndsWith(".readings.response"))
+                if (e.Topic.EndsWith(".readings.response"))
                 {
                     if (root.TryGetProperty("reading", out var reading))
                     {
@@ -69,10 +77,6 @@ namespace NetCoreClient.Monitoring
                 {
                     HandleDataResponse(root);
                 }
-                else
-                {
-                    Console.WriteLine($"[WARN] Unhandled topic: {e.Topic}");
-                }
             }
             catch (JsonException ex)
             {
@@ -81,27 +85,6 @@ namespace NetCoreClient.Monitoring
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] Message handling error: {ex.Message}");
-            }
-        }
-
-        private void HandleListResponse(JsonElement response)
-        {
-            Console.WriteLine("[LOG] Processing list response");
-
-            if (!response.TryGetProperty("coolers", out var coolersArray))
-            {
-                Console.WriteLine("[WARN] No coolers array in response");
-                return;
-            }
-
-            foreach (var coolerElement in coolersArray.EnumerateArray())
-            {
-                var coolerId = coolerElement.GetString();
-                if (!string.IsNullOrEmpty(coolerId))
-                {
-                    Console.WriteLine($"[LOG] Adding/updating cooler: {coolerId}");
-                    EnsureCoolerExists(coolerId);
-                }
             }
         }
 
@@ -130,16 +113,28 @@ namespace NetCoreClient.Monitoring
             {
                 var measurement = measurementElement.GetString();
                 var value = valueElement.GetDouble();
+                var timestamp = timestampElement.GetDateTime();
 
                 if (!string.IsNullOrEmpty(measurement))
                 {
                     status.LastReadings[measurement] = value;
-                    status.LastUpdateTime = timestampElement.GetDateTime();
+                    status.LastUpdateTime = timestamp;
 
                     if (measurement == "water_flow")
                     {
-                        status.TotalLitersDispensed += value;
+                        if (value > 0)
+                        {
+                            var previousTotal = status.TotalLitersDispensed;
+                            status.TotalLitersDispensed += value;
+                            Console.WriteLine($"[LOG] Litri erogati per {coolerId}: {previousTotal:F2}L -> {status.TotalLitersDispensed:F2}L (+" +
+                                $"{value:F2}L)");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[LOG] Flusso zero o negativo ignorato: {value:F2}L");
+                        }
                     }
+
                     Console.WriteLine($"[LOG] Updated {measurement} for {coolerId}: {value}");
                 }
             }
@@ -168,11 +163,49 @@ namespace NetCoreClient.Monitoring
             {
                 foreach (var stat in stats.EnumerateObject())
                 {
-                    if (stat.Value.TryGetProperty("lastValue", out var lastValue))
+                    var statsInfo = new StatsInfo
                     {
-                        status.LastReadings[stat.Name] = lastValue.GetDouble();
-                        Console.WriteLine($"[LOG] Updated stat {stat.Name} for {coolerId}: {lastValue.GetDouble()}");
+                        Average = stat.Value.GetProperty("average").GetDouble(),
+                        Min = stat.Value.GetProperty("min").GetDouble(),
+                        Max = stat.Value.GetProperty("max").GetDouble(),
+                        LastValue = stat.Value.GetProperty("lastValue").GetDouble(),
+                        LastUpdate = DateTime.UtcNow
+                    };
+
+                    var measurementType = stat.Name;
+                    var oldStats = status.Stats.ContainsKey(measurementType) ? status.Stats[measurementType] : null;
+
+                    if (oldStats != null)
+                    {
+                        Console.WriteLine($"[LOG] Statistiche {measurementType} per {coolerId}:");
+                        if (Math.Abs(oldStats.Average - statsInfo.Average) > 0.01)
+                        {
+                            Console.WriteLine($"  • Media: {oldStats.Average:F2} -> {statsInfo.Average:F2}");
+                        }
+                        if (Math.Abs(oldStats.Min - statsInfo.Min) > 0.01)
+                        {
+                            Console.WriteLine($"  • Min: {oldStats.Min:F2} -> {statsInfo.Min:F2}");
+                        }
+                        if (Math.Abs(oldStats.Max - statsInfo.Max) > 0.01)
+                        {
+                            Console.WriteLine($"  • Max: {oldStats.Max:F2} -> {statsInfo.Max:F2}");
+                        }
+                        if (Math.Abs(oldStats.LastValue - statsInfo.LastValue) > 0.01)
+                        {
+                            Console.WriteLine($"  • Ultimo valore: {oldStats.LastValue:F2} -> {statsInfo.LastValue:F2}");
+                        }
                     }
+                    else
+                    {
+                        Console.WriteLine($"[LOG] Prime statistiche {measurementType} per {coolerId}:");
+                        Console.WriteLine($"  • Media: {statsInfo.Average:F2}");
+                        Console.WriteLine($"  • Min: {statsInfo.Min:F2}");
+                        Console.WriteLine($"  • Max: {statsInfo.Max:F2}");
+                        Console.WriteLine($"  • Ultimo valore: {statsInfo.LastValue:F2}");
+                    }
+
+                    status.Stats[measurementType] = statsInfo;
+                    status.LastReadings[measurementType] = statsInfo.LastValue;
                 }
             }
 
@@ -214,6 +247,13 @@ namespace NetCoreClient.Monitoring
                 foreach (var reading in status.LastReadings)
                 {
                     Console.WriteLine($"  • Ultima lettura {reading.Key}: {reading.Value:F2}");
+                    if (status.Stats.TryGetValue(reading.Key, out var stats))
+                    {
+                        Console.WriteLine($"    - Media: {stats.Average:F2}");
+                        Console.WriteLine($"    - Min: {stats.Min:F2}");
+                        Console.WriteLine($"    - Max: {stats.Max:F2}");
+                        Console.WriteLine($"    - Ultimo aggiornamento statistiche: {stats.LastUpdate:HH:mm:ss}");
+                    }
                 }
 
                 Console.WriteLine($"  • Ultimo aggiornamento: {status.LastUpdateTime:yyyy-MM-dd HH:mm:ss}");

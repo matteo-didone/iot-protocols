@@ -17,7 +17,12 @@ namespace NetCoreClient.Protocols
 
         public Amqp(string hostName)
         {
-            var factory = new ConnectionFactory() { HostName = hostName };
+            var factory = new ConnectionFactory() 
+            { 
+                HostName = hostName,
+                RequestedHeartbeat = TimeSpan.FromSeconds(60),
+                AutomaticRecoveryEnabled = true
+            };
 
             try
             {
@@ -43,6 +48,7 @@ namespace NetCoreClient.Protocols
                 var body = Encoding.UTF8.GetBytes(data);
                 var properties = _channel.CreateBasicProperties();
                 properties.Persistent = true;
+                properties.ContentType = "application/json";
 
                 _channel.BasicPublish(
                     exchange: _exchangeName,
@@ -55,6 +61,7 @@ namespace NetCoreClient.Protocols
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] Error sending data: {ex.Message}");
+                throw;
             }
         }
 
@@ -63,19 +70,22 @@ namespace NetCoreClient.Protocols
             try
             {
                 var body = Encoding.UTF8.GetBytes(payload);
-                var routingKey = topic;
+                var properties = _channel.CreateBasicProperties();
+                properties.Persistent = true;
+                properties.ContentType = "application/json";
 
                 _channel.BasicPublish(
                     exchange: _exchangeName,
-                    routingKey: routingKey,
-                    basicProperties: null,
+                    routingKey: topic,
+                    basicProperties: properties,
                     body: body);
 
-                Console.WriteLine($"[LOG] Sent command to {routingKey}: {payload}");
+                Console.WriteLine($"[LOG] Sent command to {topic}: {payload}");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] Error sending command: {ex.Message}");
+                throw;
             }
         }
 
@@ -83,40 +93,53 @@ namespace NetCoreClient.Protocols
         {
             try
             {
-                var routingKey = topic;
                 var queueName = $"queue_{Guid.NewGuid()}";
 
-                // Declare a queue
-                _channel.QueueDeclare(queueName, true, false, true);
+                // Declare a queue with auto-delete
+                var queueDeclareOk = _channel.QueueDeclare(
+                    queue: queueName,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: true,
+                    arguments: null);
 
-                // Per il pattern matching dei topic, sostituiamo + con *
-                if (routingKey.Contains("+"))
-                {
-                    routingKey = routingKey.Replace("+", "*");
-                }
+                Console.WriteLine($"[LOG] Binding queue {queueName} to exchange {_exchangeName} with routing key {topic}");
 
-                Console.WriteLine($"[LOG] Binding queue {queueName} to exchange {_exchangeName} with routing key {routingKey}");
+                // Bind the queue to the exchange with the original topic pattern
+                _channel.QueueBind(
+                    queue: queueName,
+                    exchange: _exchangeName,
+                    routingKey: topic);
 
-                // Bind the queue to the exchange
-                _channel.QueueBind(queueName, _exchangeName, routingKey);
-
-                // Set up consumer
+                // Set up consumer with manual ack
                 var consumer = new EventingBasicConsumer(_channel);
                 consumer.Received += (model, ea) =>
                 {
-                    var body = ea.Body.ToArray();
-                    var message = Encoding.UTF8.GetString(body);
+                    try
+                    {
+                        var body = ea.Body.ToArray();
+                        var message = Encoding.UTF8.GetString(body);
 
-                    // Notifica il messaggio con il routing key originale
-                    OnCommandReceived?.Invoke(this, new CommandEventArgs(
-                        ea.RoutingKey,
-                        message
-                    ));
+                        OnCommandReceived?.Invoke(this, new CommandEventArgs(
+                            ea.RoutingKey,
+                            message
+                        ));
+
+                        // Acknowledge the message
+                        _channel.BasicAck(ea.DeliveryTag, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ERROR] Error processing message: {ex.Message}");
+                        // Negative acknowledge the message
+                        _channel.BasicNack(ea.DeliveryTag, false, true);
+                    }
                 };
 
+                // Enable manual ack
                 _channel.BasicConsume(
                     queue: queueName,
-                    autoAck: true,
+                    autoAck: false,
                     consumer: consumer);
 
                 _queueBindings[topic] = queueName;
@@ -125,6 +148,7 @@ namespace NetCoreClient.Protocols
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] Error subscribing to topic {topic}: {ex.Message}");
+                throw;
             }
         }
 
@@ -134,6 +158,11 @@ namespace NetCoreClient.Protocols
             {
                 if (_queueBindings.TryGetValue(topic, out string? queueName) && queueName != null)
                 {
+                    _channel.QueueUnbind(
+                        queue: queueName,
+                        exchange: _exchangeName,
+                        routingKey: topic);
+
                     _channel.QueueDelete(queueName);
                     _queueBindings.Remove(topic);
                     Console.WriteLine($"[LOG] Unsubscribed from topic: {topic}");
@@ -142,6 +171,7 @@ namespace NetCoreClient.Protocols
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] Error unsubscribing from topic {topic}: {ex.Message}");
+                throw;
             }
         }
 
@@ -161,12 +191,17 @@ namespace NetCoreClient.Protocols
                     }
                 }
 
+                _channel?.Close();
                 _channel?.Dispose();
+                _connection?.Close();
                 _connection?.Dispose();
+
+                Console.WriteLine("[LOG] AMQP connection closed and resources disposed");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] Error during disposal: {ex.Message}");
+                throw;
             }
         }
     }
